@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  role      String   @default("user")
+}
+
+model Product {
+  id                String     @id @default(uuid())
+  name              String
+  weight            Float      // dalam gram
+
+  type              ProductType @relation(fields: [productTypeId], references: [id])
+  productTypeId     String
+
+  purity            GoldPurity @relation(fields: [purityId], references: [id])
+  purityId          String
+
+  manufacturer      Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  manufacturerId    String?
+
+  stock             Stocks?
+
+  designDescription String?
+  costPrice         Float
+  sellingPrice      Float
+  isActive          Boolean    @default(true)
+  images            ProductImage[]
+  certificates      ProductCertificate[]
+  priceHistories    PriceHistory[]
+  inventoryLogs     InventoryLog[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([name])
+  @@index([productTypeId])
+  @@index([purityId])
+  @@index([sellingPrice])
+}
+
+model Stocks {
+  id         String   @id @default(uuid())
+  productId  String   @unique
+  quantity   Int      @default(0)
+
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model ProductType {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  products    Product[]
+}
+
+model GoldPurity {
+  id          String    @id @default(uuid())
+  karat       Int
+  percentage  Float
+  description String?
+  products    Product[]
+}
+
+model Manufacturer {
+  id            String    @id @default(uuid())
+  name          String
+  address       String?
+  phone         String?
+  email         String?
+  contactPerson String?
+  isActive      Boolean   @default(true)
+  products      Product[]
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  url       String
+  isPrimary Boolean  @default(false)
+}
+
+model ProductCertificate {
+  id               String   @id @default(uuid())
+  product          Product  @relation(fields: [productId], references: [id])
+  productId        String
+  certificateNumber String
+  issuingAuthority String?
+  issueDate        DateTime?
+  expiryDate       DateTime?
+  scanUrl          String?
+}
+
+model PriceHistory {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  oldPrice  Float
+  newPrice  Float
+  changeDate DateTime @default(now())
+  changedBy String?   // user id yang mengubah
+  reason    String?
+}
+
+model InventoryLog {
+  id              String     @id @default(uuid())
+  product         Product    @relation(fields: [productId], references: [id])
+  productId       String
+  transactionType TransactionType
+  quantityChange  Int
+  referenceId     String?
+  notes           String?
+  logDate         DateTime   @default(now())
+  loggedBy        String?    // user id yang mencatat
+}
+
+enum TransactionType {
+  PURCHASE
+  SALE
+  RETURN
+  ADJUSTMENT
+}
+
+
+
