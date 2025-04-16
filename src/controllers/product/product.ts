@@ -8,7 +8,7 @@ export const createProduct = async (req: Request, res: Response) => {
     const productData: Omit<ProductForm, 'id' | 'createdAt' | 'updatedAt'> = req.body;
     
     // Additional validation
-    if (productData.prices <= 0) {
+    if (productData.costPrice <= 0) {
       throw new Error('Price must be greater than 0');
     }
 

@@ -2,10 +2,19 @@ import { prisma } from "../../config/db";
 import { ProductForm, StockProducts,  } from "../../types";
 
 export const productService = {
-  async createProduct(productData: Omit<ProductForm, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProductForm> {
+  async createProduct(
+    productData: Omit<ProductForm, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ProductForm> {
     // Validate required fields
-    if (!productData.code || !productData.name || typeof productData.prices !== 'number') {
-      throw new Error('Missing required fields or invalid data types');
+    const requiredFields = [
+      'name', 'weight', 'costPrice', 'sellingPrice',
+      'designDescription', 'productTypeId', 'purityId', 'manufacturerId'
+    ];
+
+    for (const field of requiredFields) {
+      if (!productData[field as keyof typeof productData]) {
+        throw new Error(`Missing required field: ${field}`);
+      }
     }
 
     // Validate stock if provided
@@ -17,41 +26,46 @@ export const productService = {
       // Create product
       const product = await tx.product.create({
         data: {
-          code: productData.code,
           name: productData.name,
-          description: productData.description,
-          prices: productData.prices,
+          costPrice: productData.costPrice,
+          sellingPrice: productData.sellingPrice,
+          weight: productData.weight,
+          designDescription: productData.designDescription,
+          productTypeId: productData.productTypeId,
+          purityId: productData.purityId,
+          manufacturerId: productData.manufacturerId,
         },
-        include: {
-          stock: true // Include stock relation
-        }
       });
 
       // Create stock if provided
       let stock: StockProducts | null = null;
       if (productData.Stock) {
-        const stockRecord = await tx.stock.create({
+        const stockRecord = await tx.stocks.create({
           data: {
-            stock: productData.Stock.stock,
+            quantity: productData.Stock.stock,
             productId: product.id,
           },
         });
         stock = {
           id: stockRecord.id,
-          stock: stockRecord.stock,
-          productId: stockRecord.productId
+          stock: stockRecord.quantity,
+          productId: stockRecord.productId,
         };
       }
 
       return {
         id: product.id,
-        code: product.code,
         name: product.name,
-        description: product.description,
-        prices: product.prices,
+        weight: product.weight,
+        costPrice: product.costPrice,
+        sellingPrice: product.sellingPrice,
+        designDescription: product.designDescription,
+        productTypeId: product.productTypeId,
+        purityId: product.purityId,
+        manufacturerId: product.manufacturerId,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
-        Stock: stock
+        Stock: stock,
       };
     });
   },

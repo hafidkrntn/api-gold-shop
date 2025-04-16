@@ -124,7 +124,7 @@ async function main() {
       name: 'Cincin Kawin 18K',
       productTypeId: '550e8400-e29b-41d3-a456-426614174001',
       purityId: '660e8400-e29b-41d3-a456-426614174003',
-      manufacturerId: '770e8400-e29b-41d3-a456-426614174001',
+      manufacturerId: '770e8400-e29 b-41d3-a456-426614174001',
       weight: 3.5,
       costPrice: 3500000,
       sellingPrice: 4200000,

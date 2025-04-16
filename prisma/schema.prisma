@@ -67,6 +67,7 @@ model ProductType {
   id          String    @id @default(uuid())
   name        String
   description String?
+  
   products    Product[]
 }
 
